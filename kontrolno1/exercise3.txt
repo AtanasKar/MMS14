@@ -1,0 +1,9 @@
+3.1) ps aux
+
+3.2) mkdir 'MMS C camp'
+
+3.3) chmod u=rwx ~/Desktop/testFile
+3.3) chmod g=rx ~/Desktop/testFile
+3.3) chmod o=r ~/Desktop/testFile
+
+3.4) wc -l source1.c source2.c > lineCount
