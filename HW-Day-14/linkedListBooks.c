@@ -16,10 +16,10 @@ typedef struct
     double price;
 } Book;
 
-typedef struct
+typedef struct node
 {
     Book book;
-    struct LinkedList *next;
+    struct node *next;
 } LinkedList;
 
 
@@ -44,7 +44,7 @@ LinkedList* create_ll(Book b){
 void push(Book b,LinkedList** ll){
     LinkedList* temp = create_ll(b);
     temp->book=b;
-    temp->next=NULL;
+    temp->next=*ll;
     *ll=temp;
 }
 
@@ -55,57 +55,56 @@ void printList(LinkedList* ll){
         printf("%-25s",curr->book.title);
         printf("%-25s",curr->book.author);
         printf("%-10d",curr->book.pages);
-        printf("%lf",curr->book.price);
+        printf("%.2lf\n",curr->book.price);
         curr=curr->next;
     }
-    putchar('\n');
 }
 
-// LinkedList* sortedMerge(LinkedList* listA,LinkedList* listB, int(*cmp)(const void*,const void*)){
-//     LinkedList* sorted =NULL;
-//     if(listA==NULL){
-//         return listB;
-//     }
-//     if(listB==NULL){
-//         return listA;
-//     }
-//     if(cmp(&listA->book,&listB->book)>0){
-//         sorted=listA;
-//         sorted->next=sortedMerge(listA->next,listB,cmp);
-//     }else{
-//         sorted=listB;
-//         sorted->next=sortedMerge(listA,listB->next,cmp);
-//     }
-//     return sorted;
-// }
+LinkedList* sortedMerge(LinkedList* listA,LinkedList* listB, int(*cmp)(const void*,const void*)){
+    LinkedList* sorted =NULL;
+    if(listA==NULL){
+        return listB;
+    }
+    if(listB==NULL){
+        return listA;
+    }
+    if(cmp(&listA->book,&listB->book)>0){
+        sorted=listA;
+        sorted->next=sortedMerge(listA->next,listB,cmp);
+    }else{
+        sorted=listB;
+        sorted->next=sortedMerge(listA,listB->next,cmp);
+    }
+    return sorted;
+}
 
-// void frontBackSplit(LinkedList* ll,LinkedList** front,LinkedList** back){
-//     LinkedList* slow=ll;
-//     LinkedList* fast=ll->next;
-//     while (fast!=NULL)
-//     {
-//         fast=fast->next;
-//         if(fast!=NULL){
-//             slow=slow->next;
-//             fast=fast->next;
-//         }
-//         *front=ll;
-//         *back=slow->next;
-//         slow->next=NULL;
-//     }
+void frontBackSplit(LinkedList* ll,LinkedList** front,LinkedList** back){
+    LinkedList* slow=ll;
+    LinkedList* fast=ll->next;
+    while (fast!=NULL)
+    {
+        fast=fast->next;
+        if(fast!=NULL){
+            slow=slow->next;
+            fast=fast->next;
+        }
+        *front=ll;
+        *back=slow->next;
+        slow->next=NULL;
+    }
     
-// }
+}
 
-// void mergeSort(LinkedList** ll,int(*cmp)(const void*,const void*)){
-//     if(*ll==NULL||(*ll)->next==NULL){
-//         return;
-//     }
-//     LinkedList *front=NULL,*back=NULL;
-//     frontBackSplit(*ll,&front,&back);
-//     mergeSort(&front,cmp);
-//     mergeSort(&back,cmp);
-//     *ll=sortedMerge(front,back,cmp);
-// }
+void mergeSort(LinkedList** ll,int(*cmp)(const void*,const void*)){
+    if(*ll==NULL||(*ll)->next==NULL){
+        return;
+    }
+    LinkedList *front=NULL,*back=NULL;
+    frontBackSplit(*ll,&front,&back);
+    mergeSort(&front,cmp);
+    mergeSort(&back,cmp);
+    *ll=sortedMerge(front,back,cmp);
+}
 
 int main()
 {
@@ -123,7 +122,8 @@ int main()
         push(book,&list);
     }
 
-    
+    //mergeSort(&list,comparPages);
+
     printList(list);
     
 
@@ -157,7 +157,7 @@ void randomPages(unsigned *pgs)
 
 void randomPrice(double *price)
 {
-    *price = (rand() % 1000) / (double)(rand() % 1000) + 1;
+    *price = 1+((double)rand()/RAND_MAX)*(1000-1);
 }
 
 void swapg(void *lhs, void *rhs, size_t size)
@@ -229,6 +229,6 @@ void printBooks(Book *books, size_t count)
         printf("%-25s", books[i].title);
         printf("%-25s", books[i].author);
         printf("%-10u", books[i].pages);
-        printf("%lf\n", books[i].price);
+        printf("%.2lf\n", books[i].price);
     }
 }
