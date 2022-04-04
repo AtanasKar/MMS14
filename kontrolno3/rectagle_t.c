@@ -164,5 +164,7 @@ int main()
     filterRects(&list,20,100);
 
     print_list(list);
+
+    listFree(&list);
     return 0;
 }
