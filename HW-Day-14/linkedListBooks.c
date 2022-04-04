@@ -22,95 +22,23 @@ typedef struct node
     struct node *next;
 } LinkedList;
 
-
 void randomName(char *);
 void randomPages(unsigned *);
 void randomPrice(double *);
-void swapg(void *, void *, size_t);
-int comparPrice(const void *, const void *);
-int comparPages(const void *, const void *);
-int comparTitles(const void *, const void *);
-int comparAuthors(const void *, const void *);
-void bubbleSort(void *, size_t, size_t, int (*)(const void *, const void *));
-void printBooks(Book *, size_t);
-
-LinkedList* create_ll(Book b){
-    LinkedList* list= malloc(sizeof(LinkedList));
-    list->book=b;
-    list->next=NULL;
-    return list;
-}
-
-void push(Book b,LinkedList** ll){
-    LinkedList* temp = create_ll(b);
-    temp->book=b;
-    temp->next=*ll;
-    *ll=temp;
-}
-
-void printList(LinkedList* ll){
-    LinkedList* curr=ll;
-    while (curr)
-    {
-        printf("%-25s",curr->book.title);
-        printf("%-25s",curr->book.author);
-        printf("%-10d",curr->book.pages);
-        printf("%.2lf\n",curr->book.price);
-        curr=curr->next;
-    }
-}
-
-LinkedList* sortedMerge(LinkedList* listA,LinkedList* listB, int(*cmp)(const void*,const void*)){
-    LinkedList* sorted =NULL;
-    if(listA==NULL){
-        return listB;
-    }
-    if(listB==NULL){
-        return listA;
-    }
-    if(cmp(&listA->book,&listB->book)>0){
-        sorted=listA;
-        sorted->next=sortedMerge(listA->next,listB,cmp);
-    }else{
-        sorted=listB;
-        sorted->next=sortedMerge(listA,listB->next,cmp);
-    }
-    return sorted;
-}
-
-void frontBackSplit(LinkedList* ll,LinkedList** front,LinkedList** back){
-    LinkedList* slow=ll;
-    LinkedList* fast=ll->next;
-    while (fast!=NULL)
-    {
-        fast=fast->next;
-        if(fast!=NULL){
-            slow=slow->next;
-            fast=fast->next;
-        }
-        *front=ll;
-        *back=slow->next;
-        slow->next=NULL;
-    }
-    
-}
-
-void mergeSort(LinkedList** ll,int(*cmp)(const void*,const void*)){
-    if(*ll==NULL||(*ll)->next==NULL){
-        return;
-    }
-    LinkedList *front=NULL,*back=NULL;
-    frontBackSplit(*ll,&front,&back);
-    mergeSort(&front,cmp);
-    mergeSort(&back,cmp);
-    *ll=sortedMerge(front,back,cmp);
-}
+int comparTitles(Book, Book);
+LinkedList *create_ll(Book);
+void listFree(LinkedList **);
+void push(Book, LinkedList **);
+void printList(LinkedList *);
+LinkedList *sortedMerge(LinkedList *, LinkedList *, int (*)(Book, Book));
+void frontBackSplit(LinkedList *, LinkedList **, LinkedList **);
+void mergeSort(LinkedList **, int (*)(Book, Book));
 
 int main()
 {
     srand(time(NULL));
 
-    LinkedList* list=NULL;
+    LinkedList *list = NULL;
 
     for (size_t i = 0; i < COUNT; i++)
     {
@@ -119,15 +47,113 @@ int main()
         randomName(book.author);
         randomPages(&book.pages);
         randomPrice(&book.price);
-        push(book,&list);
+        push(book, &list);
     }
 
-    //mergeSort(&list,comparPages);
+    mergeSort(&list, comparTitles);
 
     printList(list);
-    
+
+    listFree(&list);
 
     return EXIT_SUCCESS;
+}
+
+LinkedList *create_ll(Book b)
+{
+    LinkedList *list = malloc(sizeof(LinkedList));
+    list->book = b;
+    list->next = NULL;
+    return list;
+}
+
+void listFree(LinkedList **list)
+{
+    LinkedList *current = *list;
+    LinkedList *prev;
+    while (current)
+    {
+        prev = current;
+        current = current->next;
+        free(prev);
+    }
+    *list = NULL;
+}
+
+void push(Book b, LinkedList **ll)
+{
+    LinkedList *temp = create_ll(b);
+    temp->book = b;
+    temp->next = *ll;
+    *ll = temp;
+}
+
+void printList(LinkedList *ll)
+{
+    LinkedList *curr = ll;
+    while (curr)
+    {
+        printf("%-25s", curr->book.title);
+        printf("%-25s", curr->book.author);
+        printf("%-10d", curr->book.pages);
+        printf("%.2lf\n", curr->book.price);
+        curr = curr->next;
+    }
+}
+
+LinkedList *sortedMerge(LinkedList *listA, LinkedList *listB, int (*cmp)(Book, Book))
+{
+    LinkedList *sorted = NULL;
+    if (listA == NULL)
+    {
+        return listB;
+    }
+    if (listB == NULL)
+    {
+        return listA;
+    }
+    if (cmp(listA->book, listB->book) > 0)
+    {
+        sorted = listA;
+        sorted->next = sortedMerge(listA->next, listB, cmp);
+    }
+    else
+    {
+        sorted = listB;
+        sorted->next = sortedMerge(listA, listB->next, cmp);
+    }
+    return sorted;
+}
+
+void frontBackSplit(LinkedList *list, LinkedList **front, LinkedList **back)
+{
+    LinkedList *slow = list;
+    LinkedList *fast = list->next;
+    while (fast != NULL)
+    {
+        fast = fast->next;
+        if (fast != NULL)
+        {
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+    *front = list;
+    *back = slow->next;
+    slow->next = NULL;
+}
+
+void mergeSort(LinkedList **list, int (*cmp)(Book, Book))
+{
+    if (*list == NULL || (*list)->next == NULL)
+    {
+        return;
+    }
+    LinkedList *front = NULL, *back = NULL;
+    frontBackSplit(*list, &front, &back);
+    mergeSort(&front, cmp);
+    mergeSort(&back, cmp);
+    *list = sortedMerge(front, back, cmp);
 }
 
 void randomName(char *str)
@@ -157,78 +183,12 @@ void randomPages(unsigned *pgs)
 
 void randomPrice(double *price)
 {
-    *price = 1+((double)rand()/RAND_MAX)*(1000-1);
+    *price = 1 + ((double)rand() / RAND_MAX) * (1000 - 1);
 }
 
-void swapg(void *lhs, void *rhs, size_t size)
+int comparTitles(Book b1, Book b2)
 {
-    void *temp = malloc(size);
-    memcpy(temp, lhs, size);
-    memcpy(lhs, rhs, size);
-    memcpy(rhs, temp, size);
-    free(temp);
-}
-
-int comparPrice(const void *b1, const void *b2)
-{
-    Book book1 = *(Book *)b1;
-    Book book2 = *(Book *)b2;
-    if (fabs(book2.price - book1.price) < EPS)
-    {
-        return 0;
-    }
-    else if (book2.price < book1.price)
-    {
-        return -1;
-    }
-    return 1;
-}
-
-int comparPages(const void *b1, const void *b2)
-{
-    Book book1 = *(Book *)b1;
-    Book book2 = *(Book *)b2;
-    return book2.pages - book1.pages;
-}
-
-int comparTitles(const void *b1, const void *b2)
-{
-    Book book1 = *(Book *)b1;
-    Book book2 = *(Book *)b2;
+    Book book1 = b1;
+    Book book2 = b2;
     return strcmp(book2.title, book1.title);
-}
-
-int comparAuthors(const void *b1, const void *b2)
-{
-    Book book1 = *(Book *)b1;
-    Book book2 = *(Book *)b2;
-    return strcmp(book1.author, book2.author);
-}
-
-void bubbleSort(void *arr, size_t length, size_t size, int (*compar)(const void *, const void *))
-{
-
-    for (size_t i = 0; i < length - 1; i++)
-    {
-        for (size_t j = 0; j < (length - i - 1) * size; j += size)
-        {
-            if (compar(arr + j, arr + j + size) < 0)
-            {
-                swapg(arr + j, arr + j + size, size);
-            }
-        }
-    }
-}
-
-void printBooks(Book *books, size_t count)
-{
-    char *row1[] = {"Titles:", "Authors:", "Pages:", "Prices:"};
-    printf("%-24s %-24s %-9s %s\n", row1[0], row1[1], row1[2], row1[3]);
-    for (size_t i = 0; i < count; i++)
-    {
-        printf("%-25s", books[i].title);
-        printf("%-25s", books[i].author);
-        printf("%-10u", books[i].pages);
-        printf("%.2lf\n", books[i].price);
-    }
 }
