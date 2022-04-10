@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     for (size_t i = 1; i < argc; i++)
     {
         exitstatus=forkExecute(argv[i]);
-        if(EXIT_FAILURE==exitstatus){
+        if(EXIT_SUCCESS==exitstatus){
             return exitstatus;
         }
     }

@@ -1,0 +1,8 @@
+IPC:
+
+-pipe  //primer: sum.c
+-FIFO  
+-signals  //primer: cantStop.c
+-Message queue
+-shared memory
+-socket
